@@ -20,5 +20,7 @@ def create_app(config_name):
     db.init_app(app)
     redis_store.init_app(app)
     from .main import main as main_blueprint
+    from .main.common import get_params
+    main_blueprint.before_app_request(get_params)
     app.register_blueprint(main_blueprint)
     return app

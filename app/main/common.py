@@ -5,6 +5,9 @@ from flask import jsonify, current_app, request, json
 import jwt
 from .. import redis_store
 
+body = {}
+session = {}
+
 
 def render_error(message):
     response = jsonify({
@@ -32,10 +35,19 @@ def make_session(payload):
     return token
 
 
+def get_params():
+    try:
+        body['params'] = json.loads(request.data)
+    except Exception as e:
+        print e
+        return render_error("JSON格式不对")
+
+
 def check_login(func):
     def get_session(*args, **kw):
-        body = json.loads(request.data)
-        if 'sessionToken' not in body:
+        params = body['params']
+        print params
+        if 'sessionToken' not in params:
             return render_error("您未登陆或者会话已过期")
         try:
             key = jwt.decode(body['sessionToken'], current_app.config.get('SECRET_KEY'), algorithms=['HS256'])
@@ -43,8 +55,13 @@ def check_login(func):
         except Exception as e:
             print e
             return render_error("获取session失败")
+        session['username'] = key['username']
         if value != body['sessionToken']:
             return render_error("非法用户")
         return func(*args, **kw)
 
     return get_session
+
+
+def del_session():
+    pass

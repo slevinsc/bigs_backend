@@ -1,7 +1,7 @@
 # coding=utf-8
 __author__ = 'Slevin'
 from . import main
-from common import render_ok, render_error, make_session, check_login
+from common import render_ok, render_error, make_session, check_login, body
 from flask import request, json
 from flask_restful import Api, Resource
 from app.models import user
@@ -13,18 +13,17 @@ api = Api(main, catch_all_404s=True)
 class UserList(Resource):
     # 注册
     def post(self):
-        body = json.loads(request.data)
-        body['pwd'] = body['password']
-        if "username" not in body:
+        params = body["params"]
+        params['pwd'] = params['password']
+        if "username" not in params:
             return render_error("please pass username ")
-        if "password" not in body:
+        if "password" not in params:
             return render_error("please pass password ")
-        body.pop('password')
-        print generate_password_hash(body['pwd'])
-        result = user.user_create(body)
+            params.pop('password')
+        result = user.user_create(params)
         if result == 0:
             return render_error("创建用户失败")
-        res = user.user_get({"id": result})
+        res = user.user_get_obj({"id": result})
         return render_ok(**{'sessionToken': make_session({'username': res.username})})
 
     # 返回所有用户
@@ -37,17 +36,17 @@ class UserList(Resource):
 class UserLogin(Resource):
     # 登陆
     def post(self):
-        body = json.loads(request.data)
-        if "username" not in body:
+        params = body["params"]
+        if "username" not in params:
             return render_error("please pass username ")
-        if "password" not in body:
+        if "password" not in params:
             return render_error("please pass password ")
-        res = user.user_get_obj({"username": body['username']})
+        res = user.user_get_obj({"username": params['username']})
         if res is None:
             return render_error("用户名不正确")
         if res.veify_password(body['password']) is False:
             return render_error("密码不正确")
-        return render_ok(**{'sessionToken': make_session({'username': body['username']})})
+        return render_ok(**{'sessionToken': make_session({'username': params['username']})})
 
 
 class UserLogout(Resource):
@@ -60,13 +59,12 @@ class UserShow(Resource):
     # 修改用户信息
     @check_login
     def patch(self, user_id):
-        body = json.loads(request.data)
-        print body
+        params = body["params"]
         if user_id == 0:
             return render_error("please pass userid ")
         if "username" not in body:
             return render_error("please pass username ")
-        if user.user_update(user_id, {'username': body['username']}) == 0:
+        if user.user_update(user_id, {'username': params['username']}) == 0:
             return render_error("更新失败")
         return render_ok()
 
