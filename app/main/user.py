@@ -19,7 +19,7 @@ class UserList(Resource):
             return render_error("please pass username ")
         if "password" not in params:
             return render_error("please pass password ")
-            params.pop('password')
+        params.pop('password')
         result = user.user_create(params)
         if result == 0:
             return render_error("创建用户失败")
@@ -41,10 +41,12 @@ class UserLogin(Resource):
             return render_error("please pass username ")
         if "password" not in params:
             return render_error("please pass password ")
+        # print params['username']
         res = user.user_get_obj({"username": params['username']})
+        # print res.username
         if res is None:
             return render_error("用户名不正确")
-        if res.veify_password(body['password']) is False:
+        if res.veify_password(params['password']) is False:
             return render_error("密码不正确")
         return render_ok(**{'sessionToken': make_session({'username': params['username']})})
 
