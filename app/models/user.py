@@ -10,7 +10,7 @@ class User(db.Model):
     __table__name = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True)
-    password = db.Column(db.Text())
+    password = db.Column(db.String(128))
 
     @property
     def pwd(self):
@@ -45,8 +45,8 @@ def user_get_all():
 
 
 # select
-def user_get(values):
-    return User.query.filter_by(**values).all()
+def user_get_obj(values):
+    return User.query.filter_by(**values).first()
 
 
 # update

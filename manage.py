@@ -9,14 +9,12 @@ app = create_app('default')
 
 @app.before_first_request
 def create_user():
-    try:
-        User.query.count()
-    except Exception as e:
-        db.create_all()
-        user_data = User(username='test', pwd='000000')
-        print user_data.password
-        db.session.add(user_data)
-        db.session.commit()
+    db.drop_all()
+    db.create_all()
+    user_data = User(username='test', pwd='000000')
+    print user_data.password
+    db.session.add(user_data)
+    db.session.commit()
 
 
 manager = Manager(app)
