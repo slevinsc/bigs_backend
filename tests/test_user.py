@@ -31,8 +31,8 @@ class FlaskClientTestCase(unittest.TestCase):
         user_create({'username': 'test', 'pwd': '000000'})
         reqJSON = json.dumps({'username': 'test', 'password': '000000'})
         reponse = self.client.post('/login', data=reqJSON)
-        print json.loads(reponse.data)['msg']
         self.assertTrue('200' in reponse.data)
+        print json.loads(reponse.data)
 
 
 if __name__ == '__main__':
