@@ -23,15 +23,23 @@ class FlaskClientTestCase(unittest.TestCase):
 
     def test_register(self):
         reqJSON = json.dumps({'username': 'test', 'password': '000000'})
-        reponse = self.client.post('/user', data=reqJSON)
+        reponse = self.client.post('/users', data=reqJSON)
         self.assertTrue('200' in reponse.data)
         print json.loads(reponse.data)
 
-    def test_login(self):
+    def test_session(self):
         user_create({'username': 'test', 'pwd': '000000'})
         reqJSON = json.dumps({'username': 'test', 'password': '000000'})
-        reponse = self.client.post('/login', data=reqJSON)
-        print json.loads(reponse.data)['msg']
+        reponse = self.client.post('/user_login', data=reqJSON)
+        self.assertTrue('200' in reponse.data)
+        token = json.loads(reponse.data)['data']
+
+        reqJSON = json.dumps(token)
+        reponse = self.client.get('/users', data=reqJSON)
+        print json.loads(reponse.data)
+        self.assertTrue('200' in reponse.data)
+
+        reponse = self.client.delete('/user_logout', data=reqJSON)
         self.assertTrue('200' in reponse.data)
 
 

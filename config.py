@@ -4,6 +4,7 @@ import os
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'NNuletCPFXdAmeS^g5dqrBrayjvTtFHO'
+    SIGN_KEY = os.environ.get('SIGN_KEY') or 'NNuletCPFXdAmeS^g5dqrarayjvTtFHO'
 
     @staticmethod
     def init_app(app):

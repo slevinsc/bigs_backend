@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # coding=utf-8
+import hashlib
+import jwt
 
 from flask import jsonify, current_app, request, json
-import jwt
+
 from .. import redis_store
 
 body = {}
@@ -35,6 +37,20 @@ def make_session(payload):
     return token
 
 
+def make_sign(**kwargs):
+    params = sorted(kwargs.iteritems(), lambda asd: asd[0])
+    sign_tmp = []
+    for k in params:
+        if k is not "sign":
+            sign_tmp.append(k + "=" + params[k])
+    sign = "&".join(sign_tmp)
+    sign = sign + "key=" + current_app.config.get('SIGN_KEY')
+    print sign
+    m2 = hashlib.md5()
+    m2.update(sign)
+    return m2.hexdigest().lower()
+
+
 def get_params():
     try:
         body['params'] = json.loads(request.data)
@@ -43,20 +59,32 @@ def get_params():
         return render_error("JSON格式不对")
 
 
+def check_sign(func):
+    def sign(*args, **kw):
+        params = body['params']
+        if 'sign' not in params:
+            return render_error("没找到sign参数")
+        s = make_sign(params)
+        if s != params['sign']:
+            return render_error("sign认证不通过")
+        return func(*args, **kw)
+
+    return sign
+
+
 def check_login(func):
     def get_session(*args, **kw):
         params = body['params']
-        print params
         if 'sessionToken' not in params:
             return render_error("您未登陆或者会话已过期")
         try:
-            key = jwt.decode(body['sessionToken'], current_app.config.get('SECRET_KEY'), algorithms=['HS256'])
+            key = jwt.decode(params['sessionToken'], current_app.config.get('SECRET_KEY'), algorithms=['HS256'])
             value = redis_store.get(key['username'])
         except Exception as e:
             print e
             return render_error("获取session失败")
         session['username'] = key['username']
-        if value != body['sessionToken']:
+        if value != params['sessionToken']:
             return render_error("非法用户")
         return func(*args, **kw)
 
@@ -64,4 +92,4 @@ def check_login(func):
 
 
 def del_session():
-    pass
+    redis_store.delete(session['username'])

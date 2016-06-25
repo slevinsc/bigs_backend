@@ -1,17 +1,17 @@
 # coding=utf-8
 __author__ = 'Slevin'
-from . import main
-from common import render_ok, render_error, make_session, check_login, body
-from flask import request, json
 from flask_restful import Api, Resource
+
+from . import main
+from common import render_ok, render_error, make_session, check_login, body, del_session, make_sign
 from app.models import user
-from werkzeug.security import generate_password_hash
 
 api = Api(main, catch_all_404s=True)
 
 
 class UserList(Resource):
     # 注册
+
     def post(self):
         params = body["params"]
         params['pwd'] = params['password']
@@ -54,6 +54,11 @@ class UserLogin(Resource):
 class UserLogout(Resource):
     @check_login
     def delete(self):
+        try:
+            del_session()
+        except Exception as e:
+            print e
+            return render_error("登出失败")
         return render_ok()
 
 
@@ -91,7 +96,7 @@ def _to_users(result):
     return data
 
 
-api.add_resource(UserList, '/user')
-api.add_resource(UserLogin, '/login')
-api.add_resource(UserLogout, '/logout')
-api.add_resource(UserShow, '/user/<string:user_id>')
+api.add_resource(UserList, '/users')
+api.add_resource(UserLogin, '/user_login')
+api.add_resource(UserLogout, '/user_logout')
+api.add_resource(UserShow, '/users/<string:user_id>')
