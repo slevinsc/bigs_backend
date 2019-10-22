@@ -43,7 +43,7 @@ passlib==1.6.5
 pathlib==1.0.1
 peewee==2.4.4
 pexpect==4.0.1
-Pillow==3.1.1
+Pillow==6.2.0
 psutil==4.1.0
 ptyprocess==0.5
 pyasn1==0.1.9
